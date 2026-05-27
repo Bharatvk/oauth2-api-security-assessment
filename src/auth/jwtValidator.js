@@ -20,7 +20,12 @@ const DEFAULT_CLOCK_SKEW_SECONDS = 30;
 function parseJsonObject(segment) {
   try {
     const parsed = JSON.parse(decodeBase64Url(segment).toString("utf8"));
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      Array.isArray(parsed) ||
+      Object.keys(parsed).length === 0
+    ) {
       throw new Error("JWT segment is not a JSON object");
     }
     return parsed;

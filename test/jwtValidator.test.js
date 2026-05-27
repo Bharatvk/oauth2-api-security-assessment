@@ -120,6 +120,26 @@ test("invalid base64url or JSON throws MalformedTokenError", async () => {
   await expect(validateToken(badJson, options)).rejects.toBeInstanceOf(MalformedTokenError);
 });
 
+test("empty header or payload object throws MalformedTokenError", async () => {
+  const emptyHeader = `${encodeBase64Url("{}")}.${encodeBase64Url(
+    JSON.stringify({ sub: "user_abc123" })
+  )}.abc`;
+  const emptyPayload = `${encodeBase64Url(
+    JSON.stringify({ alg: "RS256", kid: "kid_1" })
+  )}.${encodeBase64Url("{}")}.abc`;
+
+  await expect(validateToken(emptyHeader, options)).rejects.toBeInstanceOf(MalformedTokenError);
+  await expect(validateToken(emptyPayload, options)).rejects.toBeInstanceOf(MalformedTokenError);
+});
+
+test("invalid base64url signature length throws MalformedTokenError", async () => {
+  const token = `${encodeBase64Url(
+    JSON.stringify({ alg: "RS256", kid: "kid_1" })
+  )}.${encodeBase64Url(JSON.stringify({ sub: "user_abc123" }))}.a`;
+
+  await expect(validateToken(token, options)).rejects.toBeInstanceOf(MalformedTokenError);
+});
+
 test("alg none throws UnsupportedAlgorithmError", async () => {
   const keys = createRsaKeyPair();
   const token = createToken({ ...keys, alg: "none", sign: false });
